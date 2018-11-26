@@ -1,15 +1,18 @@
 ################################################################################
 
-# model downloader / unpacker - (c) 2018 Toby Breckon, Durham University, UK
+# archive downloader / unpacker - (c) 2018 Toby Breckon, Durham University, UK
 
 ################################################################################
 
-URL_MODELS=https://collections.durham.ac.uk/downloads/r23j333226h
-MODEL_DIR_LOCAL_TARGET=models
+URL_ARCHIVE=https://collections.durham.ac.uk/downloads/r23j333226h
+ARCHIVE_DIR_LOCAL_TARGET=models
 
-MODELS_FILE_NAME=guo-raindrop-detection-pretrained-model-2018.zip
-MODELS_DIR_NAME_UNZIPPED=guo-raindrop-detection-pretrained-model-2018
-MODELS_MD5_SUM=52c3f577456e18a597b0f6d4778e2bd4
+ARCHIVE_FILE_NAME=guo-raindrop-detection-pretrained-model-2018.zip
+ARCHIVE_DIR_NAME_UNZIPPED=guo-raindrop-detection-pretrained-model-2018
+ARCHIVE_MD5_SUM=52c3f577456e18a597b0f6d4778e2bd4
+
+UNPACK_COMMAND='unzip -q'
+SEMANTIC_NAME="pretrained CNN models" # what we are downloading
 
 ################################################################################
 
@@ -29,38 +32,38 @@ set -e
 
 # perform download
 
-echo "Downloading pretrained models..."
+echo "Downloading $SEMANTIC_NAME ..."
 
-mkdir -p $MODEL_DIR_LOCAL_TARGET
+mkdir -p $ARCHIVE_DIR_LOCAL_TARGET
 
-MODELS=./$MODEL_DIR_LOCAL_TARGET/$MODELS_FILE_NAME
+ARCHIVE=./$ARCHIVE_DIR_LOCAL_TARGET/$ARCHIVE_FILE_NAME
 
-curl --progress-bar $URL_MODELS > $MODELS
+curl --progress-bar $URL_ARCHIVE > $ARCHIVE
 
 ################################################################################
 
 # perform md5 check and move to required local target directory
 
-cd $MODEL_DIR_LOCAL_TARGET
+cd $ARCHIVE_DIR_LOCAL_TARGET
 
 echo "checking the MD5 checksum for downloaded models..."
 
-CHECK_SUM_CHECKPOINTS="$MODELS_MD5_SUM  $MODELS_FILE_NAME"
+CHECK_SUM_CHECKPOINTS="$ARCHIVE_MD5_SUM  $ARCHIVE_FILE_NAME"
 
 echo $CHECK_SUM_CHECKPOINTS | md5sum -c
 
 echo "Unpacking the zip file..."
 
-unzip -q $MODELS_FILE_NAME
+$UNPACK_COMMAND $ARCHIVE_FILE_NAME
 
 echo "Tidying up..."
 
-mv $MODELS_DIR_NAME_UNZIPPED/* .
+mv $ARCHIVE_DIR_NAME_UNZIPPED/* .
 
-rm $MODELS_FILE_NAME && rm -r $MODELS_DIR_NAME_UNZIPPED
+rm $ARCHIVE_FILE_NAME && rm -r $ARCHIVE_DIR_NAME_UNZIPPED
 
 ################################################################################
 
-echo "... completed -> required models are in $MODEL_DIR_LOCAL_TARGET/"
+echo "... completed -> required $SEMANTIC_NAME are in $ARCHIVE_DIR_LOCAL_TARGET/"
 
 ################################################################################
