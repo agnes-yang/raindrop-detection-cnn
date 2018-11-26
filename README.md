@@ -10,8 +10,6 @@ Tested using Python 3.4.6, [TensorFlow 1.9.0](https://www.tensorflow.org/install
 
 Raindrop detection vis differing region proposal strategies (sliding window, superpixel and selective search)
 
-*(This repository contains the raindrop classification, detection demonstration code and associated supporting files)*
-
 ## Abstract
 _"The presence of raindrop induced image distortion has a significant negative impact on the performance of a wide
 range of all-weather visual sensing applications including within the increasingly important contexts of visual
