@@ -5,7 +5,7 @@ Tested using Python 3.4.6, [TensorFlow 1.9.0](https://www.tensorflow.org/install
 (requires opencv extra modules - ximgproc module for superpixel segmentation)
 
 ## Region Proposal Strategies:
-![Demonstration of Raindrop Detection](https://github.com/GTC7788/raindropDetection/blob/master/images/example-all.png)
+![Demonstration of Raindrop Detection](https://github.com/tobybreckon/raindropDetection/blob/master/images/example-all.png)
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Raindrop detection vis differing region proposal strategies (sliding window, superpixel and selective search)
 
