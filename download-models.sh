@@ -46,13 +46,13 @@ curl --progress-bar $URL_ARCHIVE > $ARCHIVE
 
 cd $ARCHIVE_DIR_LOCAL_TARGET
 
-echo "checking the MD5 checksum for downloaded models..."
+echo "checking the MD5 checksum for downloaded archive ..."
 
 CHECK_SUM_CHECKPOINTS="$ARCHIVE_MD5_SUM  $ARCHIVE_FILE_NAME"
 
 echo $CHECK_SUM_CHECKPOINTS | md5sum -c
 
-echo "Unpacking the zip file..."
+echo "Unpacking the downloaded archive file..."
 
 $UNPACK_COMMAND $ARCHIVE_FILE_NAME
 
