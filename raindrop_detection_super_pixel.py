@@ -1,4 +1,4 @@
-#####################################################################
+################################################################################
 
 # Example : Detect raindrops within an image by using super pixel algorithm
 # and classify the ROI by using AlexNet CNN.
@@ -7,21 +7,21 @@
 
 # License : https://github.com/GTC7788/raindropDetection/blob/master/LICENSE
 
-#####################################################################
+################################################################################
 
 # The green rectangles represents the detected raindrops.
-# the red rectangles represents the ground truth raindrops in that image.  
+# the red rectangles represents the ground truth raindrops in that image.
 
 # This script takes 1 argument indicating the image to process.
-# e.g. 
-# > python raindrop_detection_super_pixel.py 3 
-# will process image 3 in the raindrop_detection_images folder and use 
-# the associated ground truth xml file  in ground_truth_labels folder 
-# for image 3 as well.  
+# e.g.
+# > python raindrop_detection_super_pixel.py 3
+# will process image 3 in the raindrop_detection_images folder and use
+# the associated ground truth xml file  in ground_truth_labels folder
+# for image 3 as well.
 
-# This program will output 2 images in the current folder, one is the 
+# This program will output 2 images in the current folder, one is the
 # detection result, one is the super pixel segmentation result.
-#####################################################################
+################################################################################
 
 from __future__ import division, print_function, absolute_import
 import numpy as np
@@ -41,7 +41,7 @@ from tflearn.data_utils import build_image_dataset_from_dir
 import argparse
 
 
-######################################################################
+################################################################################
 
 # Use a command line parser to read command line argument
 # The integer number represents the number of the image to process
@@ -56,12 +56,12 @@ number = args.integers[0]
 # number = 1
 
 
-#######################################################################
+################################################################################
 
 # Image path
 image_path = "raindrop_detection_images/%s.jpg" % number
 
-# Path to output the result image after raindrop detection 
+# Path to output the result image after raindrop detection
 result_path = "img_%s_super_pixel_result.jpg" % number
 
 # Path to the xml file that contains the ground truth data
@@ -70,11 +70,11 @@ ground_truth_xml_path = "ground_truth_labels/%s.xml" % number
 # Path of the trained model for AlexNet
 model_path = 'Model/alexRainApr06.tfl'
 
-# Turn on ground truth detections on image 
+# Turn on ground truth detections on image
 ground_truth = True
 
 
-#######################################################################
+################################################################################
 
 """
 Convert the PIL Image object into array.
@@ -90,9 +90,10 @@ def img_to_array(pil_image):
     result /= 255
     return result
 
+################################################################################
 
 """
-Set up the structure of AlexNet CNN by using TFLearn.
+Set up the structure of AlexNet-30^2 CNN by using TFLearn.
 Returns:
 	network: a CNN which follows the structure of AlexNet.
 """
@@ -123,7 +124,7 @@ def create_basic_alexnet():
 	return network
 
 
-
+################################################################################
 
 """
 Calculates all the windows that will slide through an image.
@@ -133,8 +134,8 @@ Args:
 	stepSize: step size (in pixel) between each window.
 	windowSize: size of each window.
 Return:
-	All of the sliding windows for an image, each element represents 
-	the coordinates of top left corner of the window and its size. 
+	All of the sliding windows for an image, each element represents
+	the coordinates of top left corner of the window and its size.
 """
 def sliding_window(image, stepSize, windowSize):
 	# slide a window across the image
@@ -143,12 +144,12 @@ def sliding_window(image, stepSize, windowSize):
 			# yield the current window
 			yield (x, y, image[y:y + windowSize[1], x:x + windowSize[0]])
 
-
+################################################################################
 
 """
 This method uses the openCV built in function to perform the super pixel algorithm
 to an image. When the image is segmented into small pieces, stretch each irregular
-shape into 30 x 30 rectangles. 
+shape into 30 x 30 rectangles.
 
 Those rectangles will be region of interests and will be classified by the AlexNet.
 
@@ -193,8 +194,8 @@ def super_pixel(image):
 	cv2.imwrite('img_%s_super_pixel_segmentation.jpg' %number, result)
 
 
-	# For each 'super pixel', as the shape is an irregular and couldn't pass 
-	# into TensorFlow, we have to stretch the image into a regular rectangle. 
+	# For each 'super pixel', as the shape is an irregular and couldn't pass
+	# into TensorFlow, we have to stretch the image into a regular rectangle.
 	for i in range(number_of_super):
 	    result = np.where( labels == i )
 	    resultT = np.asarray(result).T
@@ -224,26 +225,27 @@ def super_pixel(image):
 	    	# classify the region of interest
 	    	predict_result = model.predict(imgs)
 	    	final_result = np.argmax(predict_result[0])
-			# if it is a raindrop, add to result list	    	
+			# if it is a raindrop, add to result list
 	    	if final_result == 1:
-	    		rectangle_result.append((smallestX, smallestY, 
+	    		rectangle_result.append((smallestX, smallestY,
 	    			biggestX, biggestY))
 	return rectangle_result
 
 
+################################################################################
 
 """
 Sliding window algorithm will generates too many rectangles.
 We can use the groupRectangles method to reduce overlapping rectangles.
 Args:
 	rectangleList_before: list of detected regions (rectangles).
-	threshold: Minimum possible number of rectangles minus 1. 
-			   The threshold is used in a group of rectangles to retain it. 
+	threshold: Minimum possible number of rectangles minus 1.
+			   The threshold is used in a group of rectangles to retain it.
 	eps: Relative difference between sides of the rectangles to merge them into a group.
 Return:
 	rectangleList_after: list of optimized detected regions.
 """
-# Regularise the format of the proposed result list. 
+# Regularise the format of the proposed result list.
 def utilize_rectangle_list(rectangleList_before, threshold, eps):
 	# Using the groupRectangles() function to shrink the rectangle list
 	rectangleList_after = []
@@ -256,25 +258,26 @@ def utilize_rectangle_list(rectangleList_before, threshold, eps):
 		full_rectangle_list.append(element[1]+30)
 		rectangleList_after.append(full_rectangle_list)
 
-	# group the proposed overlapping regions into one region, 
-	# decrese the recall but increase the precision. 
+	# group the proposed overlapping regions into one region,
+	# decrese the recall but increase the precision.
 	rectangleList_after, weight = cv2.groupRectangles(rectangleList_after, threshold, eps)
 
 	return rectangleList_after
 
+################################################################################
 
 """
 Parse the xml file that stores the ground truth raindrop locations in the image
 
 Args:
 	fileName: the xml file name
-Returns: 
+Returns:
 	list that each element contains the location of a ground truth raindrop
 
 """
 def parse_xml_file(fileName):
 	xml_file = ET.parse(fileName)
-	# XML_path to retrieve the x, y coordinates 
+	# XML_path to retrieve the x, y coordinates
 	xIndex = xml_file.findall('object/polygon/pt/x')
 	yIndex = xml_file.findall('object/polygon/pt/y')
 	xList = []
@@ -302,28 +305,31 @@ def parse_xml_file(fileName):
 
 	return finalList
 
+################################################################################
+
 """
 Retrieve the coordinates of each ground truth raindrop locations
 Args:
 	xml_golden: a list that each element contains the location of a ground truth raindrop
 Returns:
-	a list of coordinates for each ground truth raindrops that ready for drawing. 	
+	a list of coordinates for each ground truth raindrops that ready for drawing.
 """
 def xml_transform(xml_golden):
 	xml_result = []
 	for element in xml_golden:
 		sub_list = []
-		sub_list = [element[0][0], element[0][1], 
+		sub_list = [element[0][0], element[0][1],
 		element[2][0], element[2][1]]
 
 		xml_result.append(sub_list)
 	return xml_result
 
 
+################################################################################
 
 """
-Slide the window across the image, pass each window (region of interest) into the trained AlexNet. 
-If the region is classified as a raindrop, store the region's coordinates in a list and return 
+Slide the window across the image, pass each window (region of interest) into the trained AlexNet.
+If the region is classified as a raindrop, store the region's coordinates in a list and return
 the list.
 
 Args:
@@ -342,7 +348,7 @@ def cnn_find_raindrop(image, winW, winH):
 			continue
 
 		roi = image[y:y + winH, x:x + winW]
-		
+
 		# Convert array into PIL Image.
 		im = Image.fromarray(roi)
 		tensor_image = img_to_array(im)
@@ -352,12 +358,12 @@ def cnn_find_raindrop(image, winW, winH):
 		# predict the region.
 		predict_result = model.predict(imgs)
 		final_result = np.argmax(predict_result[0]) # transfer the result to 0 or 1
-		
+
 		if final_result == 1:
 			rectangle_result.append((x, y))
 	return rectangle_result
 
-
+################################################################################
 
 # Initialise the AlexNet and load the trained model for the CNN.
 alex_net = create_basic_alexnet()
@@ -365,7 +371,7 @@ model = tflearn.DNN(alex_net)
 model.load(model_path, weights_only = True)
 
 
-# Read the image 
+# Read the image
 image = cv2.imread(image_path)
 
 # Get the proposed regions
@@ -375,8 +381,8 @@ rectangle_result = super_pixel(image)
 
 # # **************** Draw Optimized Rectangles *******************
 # We don't want to draw the detection rectangles directly on the original image,
-# we copy the image and draws the rectangels on the copied image. 
-clone = image.copy() 
+# we copy the image and draws the rectangels on the copied image.
+clone = image.copy()
 
 for element in rectangle_result:
 	cv2.rectangle(clone,(element[0], element[1]),(element[2],element[3] ),(0, 255, 0),2)

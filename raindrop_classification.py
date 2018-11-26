@@ -1,4 +1,4 @@
-#####################################################################
+################################################################################
 
 # Example : Classify raindrop by using a AlexNet CNN
 
@@ -6,12 +6,12 @@
 
 # License : https://github.com/GTC7788/raindropDetection/blob/master/LICENSE
 
-#####################################################################
+################################################################################
 
 # This script takes 1 argument indicating the image to process.
-# e.g. 
-# > python raindrop_classification.py 3 
-# will process image 3 in the raindrop_classification_images folder.  
+# e.g.
+# > python raindrop_classification.py 3
+# will process image 3 in the raindrop_classification_images folder.
 
 # This program will print the result in the command line.
 
@@ -19,7 +19,7 @@
 # the first number indicates the percentage of the object is a non-raindrop object,
 # the second number indicates the percentage of the object is a raindrop.
 # > [ not raindrop,  raindrop ]
-#####################################################################
+################################################################################
 
 from __future__ import division, print_function, absolute_import
 import numpy as np
@@ -36,7 +36,7 @@ from tflearn.layers.merge_ops import merge
 import argparse
 
 
-#####################################################################
+################################################################################
 # Use a command line parser to read command line argument
 # The integer number represents the number of the image to process
 parser = argparse.ArgumentParser()
@@ -50,11 +50,13 @@ number = args.integers[0]
 
 img_name = 'raindrop_classification_images/%s.jpg' %number
 
-#######################################################################
+################################################################################
 
 def load_img(img_path):
 	img = Image.open(img_path)
 	return img
+
+################################################################################
 
 """
 resize the loaded image into uniform size.
@@ -65,6 +67,8 @@ def resize_img(in_image, new_width, new_height, out_image=None,
     if out_image:
         img.save(out_image)
     return img
+
+################################################################################
 
 """
 Convert the PIL Image object into array.
@@ -79,8 +83,10 @@ def img_to_array(pil_image):
     result /= 255
     return result
 
+################################################################################
+
 """
-Set up the structure of AlexNet CNN by using TFLearn.
+Set up the structure of AlexNet-30^2 CNN by using TFLearn.
 Returns:
 	network: a CNN which follows the structure of AlexNet.
 """
@@ -105,17 +111,17 @@ def create_basic_alexnet():
 	network = fully_connected(network, 4096, activation='tanh')
 	network = dropout(network, 0.5)
 	network = fully_connected(network, 2, activation='softmax')
-	network = regression(network, optimizer='momentum', 
+	network = regression(network, optimizer='momentum',
 		loss='categorical_crossentropy', learning_rate=0.001)
-		
+
 	return network
 
+################################################################################
 
 original= cv2.imread(img_name)
 cv2.namedWindow('image',cv2.WINDOW_NORMAL)
 cv2.resizeWindow('image', 30,30)
 cv2.imshow('image',original)
-
 
 original_img = load_img(img_name)
 resize_img = resize_img(original_img, 30, 30)
@@ -146,7 +152,4 @@ print("AlexNet predict this picture is " + str(classes[int(final_result)]))
 
 cv2.waitKey(0)
 
-
-
-
-
+################################################################################
