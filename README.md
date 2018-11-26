@@ -49,11 +49,11 @@ The custom dataset used for training and evaluation can be found on [Durham Coll
 $ git clone https://github.com/tobybreckon/raindrop-detection-cnn.git
 $ cd raindrop-detection-cnn
 $ sh ./download-models.sh
-$ sh ./download-data.sh
+$ sh ./download-dataset.sh
 $ ... < to follow>
 $ python raindrop_classification.py 3
 $ python raindrop_detection_sliding_window.py 3
-  $ python raindrop_detection_super_pixel.py 3
+$ python raindrop_detection_super_pixel.py 3
 ```
 
 ---
