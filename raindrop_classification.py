@@ -1,6 +1,6 @@
 ################################################################################
 
-# Example : Classify raindrop by using a AlexNet CNN
+# Example : Classify raindrop sampels by using a AlexNet-30^2 CNN
 
 # Copyright (c) 2017/18 - Tiancheng Guo / Toby Breckon, Durham University, UK
 
@@ -8,80 +8,38 @@
 
 ################################################################################
 
-# This script takes 1 argument indicating the image to process.
+# Script takes one argument indicating the path to the set of images to process:
 # e.g.
-# > python raindrop_classification.py 3
-# will process image 3 in the raindrop_classification_images folder.
+#
+# python3 ./raindrop_classification.py -f dataset/classification/test_data/0/
+#
+# will process images in the specified directory printing the result for each.
 
-# This program will print the result in the command line.
-
-# the result is a list of two numbers,
-# the first number indicates the percentage of the object is a non-raindrop object,
-# the second number indicates the percentage of the object is a raindrop.
-# > [ not raindrop,  raindrop ]
 ################################################################################
 
 from __future__ import division, print_function, absolute_import
 import numpy as np
-import tflearn
 import cv2
-from PIL import Image
+import os
+import argparse
+
+################################################################################
+
+import tflearn
 from tflearn.layers.core import input_data, dropout, fully_connected
 from tflearn.layers.conv import conv_2d, max_pool_2d, avg_pool_2d
 from tflearn.layers.normalization import local_response_normalization
 from tflearn.layers.estimator import regression
 from tflearn.data_utils import build_image_dataset_from_dir
-import os
 from tflearn.layers.merge_ops import merge
-import argparse
-
 
 ################################################################################
-# Use a command line parser to read command line argument
-# The integer number represents the number of the image to process
+# use command line parser to read command line argument for file location
+
 parser = argparse.ArgumentParser()
-parser.add_argument('integers', metavar='N', type=int, nargs='+',
-                   help='an integer represents the number of image')
+parser = argparse.ArgumentParser(description='Rain drop classiification on a set of example images.');
+parser.add_argument("-f", "--file_path", type=str, help="path to files", default='dataset/classification/test_data/1/');
 args = parser.parse_args()
-
-
-number = args.integers[0]
-# number = 6
-
-img_name = 'raindrop_classification_images/%s.jpg' %number
-
-################################################################################
-
-def load_img(img_path):
-	img = Image.open(img_path)
-	return img
-
-################################################################################
-
-"""
-resize the loaded image into uniform size.
-"""
-def resize_img(in_image, new_width, new_height, out_image=None,
-                 resize_mode=Image.ANTIALIAS):
-    img = in_image.resize((new_width, new_height), resize_mode)
-    if out_image:
-        img.save(out_image)
-    return img
-
-################################################################################
-
-"""
-Convert the PIL Image object into array.
-Args:
-	pil_image: PIL image object
-Returns:
-	result: an array ready for the CNN to predict
-"""
-def img_to_array(pil_image):
-    pil_image.load()
-    result = np.asarray(pil_image, dtype="float32")
-    result /= 255
-    return result
 
 ################################################################################
 
@@ -118,38 +76,58 @@ def create_basic_alexnet():
 
 ################################################################################
 
-original= cv2.imread(img_name)
-cv2.namedWindow('image',cv2.WINDOW_NORMAL)
-cv2.resizeWindow('image', 30,30)
-cv2.imshow('image',original)
+# Set up the trained AlexNet-30^2
 
-original_img = load_img(img_name)
-resize_img = resize_img(original_img, 30, 30)
-tensor_image = img_to_array(resize_img)
-imgs = []
-imgs.append(tensor_image)
-
-
-# Set up the trained AlexNet
 alex_net = create_basic_alexnet()
 model = tflearn.DNN(alex_net)
-model.load('Model/alexRainApr12.tfl', weights_only = True)
+model.load('models/alexnet_30_2_classification.tfl', weights_only = True)
 
+# setup display window and class names
 
-# pass the image into AlexNet
-predict_result = model.predict(imgs)
-final_result = np.argmax(predict_result[0]) # return the index of the max number in a list
+windowName = "example image"
+cv2.namedWindow(windowName,cv2.WINDOW_NORMAL)
 
+classes = {1 : 'Raindrop', 0  : 'Non-Raindrop'}
 
-classes = {1 : 'Raindrop', 0  : 'Not Raindrop'}
+# process all images in directory (sorted by filename)
 
-print("For image %s.jpg" %number)
-print("Numerical Result Data is: ")
-print(predict_result)
+for filename in sorted(os.listdir(args.file_path)):
 
-print("AlexNet predict this picture is " + str(classes[int(final_result)]))
+    # if it is a JPG file
 
+    if '.jpg' in filename:
+        print(os.path.join(args.file_path, filename));
 
-cv2.waitKey(0)
+        # read it and display in a window
+
+        img = cv2.imread(os.path.join(args.file_path, filename), cv2.IMREAD_COLOR)
+        cv2.imshow(windowName,img)
+        key = cv2.waitKey(200) # wait 200ms
+        if (key == ord('x')):
+            break
+
+        # resize to 30 x 30 using LANCZOS4 interpolation (equiv PIL ANTIALIAS)
+
+        img = cv2.resize(img, (30,30), cv2.INTER_LANCZOS4)
+
+        # convert image to RGB (from opencv BGR) and scale 0 -> 1 as per training
+
+        rgb_image = np.asarray(cv2.cvtColor(img, cv2.COLOR_BGR2RGB), dtype="float32")
+        rgb_image /= 255
+
+        # pass the image into AlexNet-30^2
+
+        predict_result = model.predict([rgb_image])
+
+        # display result
+
+        final_result = np.argmax(predict_result[0])
+
+        print("--------------- result is " + str(classes[int(final_result)]) + "(class: " + str(final_result) + ")")
+        print()
+
+# close all windows
+
+cv2.destroyAllWindows()
 
 ################################################################################
