@@ -9,7 +9,7 @@ ARCHIVE_DIR_LOCAL_TARGET=models
 
 ARCHIVE_FILE_NAME=guo-raindrop-detection-pretrained-model-2018.zip
 ARCHIVE_DIR_NAME_UNZIPPED=guo-raindrop-detection-pretrained-model-2018
-ARCHIVE_MD5_SUM=52c3f577456e18a597b0f6d4778e2bd4
+ARCHIVE_MD5_SUM=ea691f2538f1d2e0de57a108b4285173
 
 UNPACK_COMMAND='unzip -q'
 SEMANTIC_NAME="pretrained CNN models" # what we are downloading
