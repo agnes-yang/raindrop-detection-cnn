@@ -40,6 +40,7 @@ Furthermore, the example dataset must be downloaded using the shell script ```do
 
 The custom dataset used for training and evaluation can be found on [Durham Collections](https://collections.durham.ac.uk/TBC) (together with the trained network models).
 
+# TODO - fix dataset
 
 ---
 
@@ -50,10 +51,16 @@ $ git clone https://github.com/tobybreckon/raindrop-detection-cnn.git
 $ cd raindrop-detection-cnn
 $ sh ./download-models.sh
 $ sh ./download-dataset.sh
-$ ... < to follow>
-$ python raindrop_classification.py 3
+
+$ # to test positive classification test examples
+$ python raindrop_classification.py -f dataset/classification/test_data/1
+
+$ # to follow
 $ python raindrop_detection_sliding_window.py 3
+
+$ # to follow
 $ python raindrop_detection_super_pixel.py 3
+
 ```
 
 ---
