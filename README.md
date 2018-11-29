@@ -38,9 +38,11 @@ demonstrate the best accuracy as shown in the paper.
 To use these scripts the pre-trained network models must be downloaded using the shell script ```download-models.sh``` which will create an additional ```models``` directory containing the network weight data.
 Furthermore, the example dataset must be downloaded using the shell script ```download-data.sh``` which will create an additional ```dataset``` directory containing the image data for testing.
 
-The custom dataset used for training and evaluation can be found on [Durham Collections](https://collections.durham.ac.uk/TBC) (together with the trained network models).
+The custom dataset used for training and evaluation can be found on [Durham Collections](https://collections.durham.ac.uk/collections/r2c534fn94m) (together with the trained network models):
 
-# TODO - fix dataset
+-
+
+- 
 
 ---
 
@@ -55,8 +57,8 @@ $ sh ./download-dataset.sh
 $ # to test positive classification test examples
 $ python raindrop_classification.py -f dataset/classification/test_data/1
 
-$ # to follow
-$ python raindrop_detection_sliding_window.py 3
+$ # to to test sliding window detection and classification
+$ python raindrop_detection_sliding_window.py -f dataset/detection/images/
 
 $ # to follow
 $ python raindrop_detection_super_pixel.py 3
