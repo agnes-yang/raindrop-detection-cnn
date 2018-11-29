@@ -12,10 +12,11 @@
 # The green rectangles represents the detected raindrops.
 # The red rectangles represents the ground truth raindrops in the image.
 
-# Script takes one argument indicating the path to the set of images to process:
-# e.g.
+# Script takes arguments indicating the path to the set of images and ground
+# truth labels to process: e.g.
 #
-# python3 ./raindrop_detection_sliding_window.py -f dataset/detction/test_data/
+# python3 ./raindrop_detection_sliding_window.py -f dataset/detection/test_data/
+# -gt dataset/detection/ground-truth-label
 #
 # will process images in the specified directory printing the result for each.
 
@@ -221,8 +222,6 @@ for filename in sorted(os.listdir(args.file_path)):
         	cv2.rectangle(clone,(element[0], element[1]),(element[2],element[3] ),(0, 255, 0),2)
 
         ## *************************************************************
-
-
 
         # ********** Draw the rectangles that contains ground truth raindrops - RED ********
         if ground_truth:
