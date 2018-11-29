@@ -40,9 +40,9 @@ Furthermore, the example dataset must be downloaded using the shell script ```do
 
 The custom dataset used for training and evaluation can be found on [Durham Collections](https://collections.durham.ac.uk/collections/r2c534fn94m) (together with the trained network models):
 
-- Pretrained Neural Network Models for Guo 2018 study - TensorFlow format [DOI](http://dx.doi.org/10.15128/r23j333226h)
+- Pretrained Neural Network Models for Guo 2018 study - TensorFlow format : [[DOI link]](http://dx.doi.org/10.15128/r23j333226h)
 
-- Rain Drop Image Data Set for Guo 2018 study - still image set [DOI](http://dx.doi.org/10.15128/r2jh343s319)
+- Rain Drop Image Data Set for Guo 2018 study - still image set : [[DOI link]](http://dx.doi.org/10.15128/r2jh343s319)
 
 ---
 
