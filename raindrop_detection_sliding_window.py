@@ -1,7 +1,7 @@
 ################################################################################
 
 # Example : Detect raindrops within an image by using sliding window region
-# proposal algorithm and classify the ROI by using AlexNet CNN.
+# proposal algorithm and classify the ROI by using a AlexNet-30^2 CNN
 
 # Copyright (c) 2017/18 - Tiancheng Guo / Toby Breckon, Durham University, UK
 
@@ -12,82 +12,43 @@
 # The green rectangles represents the detected raindrops.
 # The red rectangles represents the ground truth raindrops in the image.
 
-
-# This script takes 1 argument indicating the image to process.
+# Script takes one argument indicating the path to the set of images to process:
 # e.g.
-# > python raindrop_detection_sliding_window.py 3
-# will process image 3 in the in the raindrop_detection_images folder and use
-# the associated ground truth xml file in ground_truth_labels folder for
-# image 3 as well.
-
-# This program will output 1 detection result image in the same folder.
+#
+# python3 ./raindrop_detection_sliding_window.py -f dataset/detction/test_data/
+#
+# will process images in the specified directory printing the result for each.
 
 ################################################################################
 
 from __future__ import division, print_function, absolute_import
 import numpy as np
-import tflearn
 import cv2
 import os
-import time
-import xml.etree.ElementTree as ET
-from math import sqrt
-from PIL import Image
+import argparse
+
+################################################################################
+
+import tflearn
 from tflearn.layers.core import input_data, dropout, fully_connected
-from tflearn.layers.conv import conv_2d, max_pool_2d
+from tflearn.layers.conv import conv_2d, max_pool_2d, avg_pool_2d
 from tflearn.layers.normalization import local_response_normalization
 from tflearn.layers.estimator import regression
 from tflearn.data_utils import build_image_dataset_from_dir
-import argparse
-
+from tflearn.layers.merge_ops import merge
 
 ################################################################################
-# Use a command line parser to read command line argument
-# The integer number represents the number of the image to process
+
+from xml_parsing import *
+
+################################################################################
+# use command line parser to read command line argument for file location
+
 parser = argparse.ArgumentParser()
-parser.add_argument('integers', metavar='N', type=int, nargs='+',
-                   help='an integer represents the number of image')
+parser = argparse.ArgumentParser(description='Rain drop classiification on a set of example images.');
+parser.add_argument("-f", "--file_path", type=str, help="path to files", default='dataset/detection/image');
+parser.add_argument("-gt", "--ground_truth_path", type=str, help="path to files", default='dataset/detection/ground-truth-label');
 args = parser.parse_args()
-
-number = args.integers[0]
-
-# Manually set the number of image to process.
-# number = 1
-
-
-################################################################################
-
-# Image path
-image_path = "raindrop_detection_images/%s.jpg" % number
-
-# Path to output the result image after raindrop detection
-result_path = "img_%s_sliding_window_result.jpg" % number
-
-# Path to the xml file that contains the ground truth data
-ground_truth_xml_path = "ground_truth_labels/%s.xml" % number
-
-# Path of the trained model for AlexNet
-model_path = 'Model/alexRainApr06.tfl'
-
-# Turn on ground truth detections on image
-ground_truth = True
-
-
-################################################################################
-
-"""
-Convert the PIL Image object into array.
-Args:
-	pil_image: PIL image object
-Returns:
-	result: an array ready for the CNN to predict
-"""
-def img_to_array(pil_image):
-
-    pil_image.load()
-    result = np.asarray(pil_image, dtype="float32")
-    result /= 255
-    return result
 
 ################################################################################
 
@@ -118,10 +79,9 @@ def create_basic_alexnet():
 	network = dropout(network, 0.5)
 	network = fully_connected(network, 2, activation='softmax')
 	network = regression(network, optimizer='momentum',
-	                     loss='categorical_crossentropy',
-	                     learning_rate=0.001)
-	return network
+		loss='categorical_crossentropy', learning_rate=0.001)
 
+	return network
 
 ################################################################################
 
@@ -178,66 +138,6 @@ def utilize_rectangle_list(rectangleList_before, threshold, eps):
 ################################################################################
 
 """
-Parse the xml file that stores the ground truth raindrop locations in the image
-
-Args:
-	fileName: the xml file name
-Returns:
-	list that each element contains the location of a ground truth raindrop
-
-"""
-def parse_xml_file(fileName):
-	xml_file = ET.parse(fileName)
-	# XML_path to retrieve the x, y coordinates
-	xIndex = xml_file.findall('object/polygon/pt/x')
-	yIndex = xml_file.findall('object/polygon/pt/y')
-	xList = []
-	yList = []
-	for x in xIndex:
-		xList.append(int(x.text))
-
-	for y in yIndex:
-		yList.append(int(y.text))
-
-	combinedList = zip(xList,yList)
-
-	subList = []
-	finalList = []
-	counter = 1
-	for element in combinedList:
-		switch = counter % 4
-		if switch == 0:
-			subList.append(element)
-			finalList.append(subList)
-			subList = []
-		else:
-			subList.append(element)
-		counter += 1
-
-	return finalList
-
-################################################################################
-
-"""
-Retrieve the coordinates of each ground truth raindrop locations
-Args:
-	xml_golden: a list that each element contains the location of a ground truth raindrop
-Returns:
-	a list of coordinates for each ground truth raindrops that ready for drawing.
-"""
-def xml_transform(xml_golden):
-	xml_result = []
-	for element in xml_golden:
-		sub_list = []
-		sub_list = [element[0][0], element[0][1],
-		element[2][0], element[2][1]]
-
-		xml_result.append(sub_list)
-	return xml_result
-
-################################################################################
-
-"""
 Slide the window across the image, pass each window (region of interest) into the trained AlexNet.
 If the region is classified as a raindrop, store the region's coordinates in a list and return
 the list.
@@ -257,68 +157,93 @@ def cnn_find_raindrop(image, winW, winH):
 		if window.shape[0] != winH or window.shape[1] != winW:
 			continue
 
-		roi = image[y:y + winH, x:x + winW]
+		# predict the region
 
-		# Convert array into PIL Image.
-		im = Image.fromarray(roi)
-		tensor_image = img_to_array(im)
-		imgs = [] # must be in the 2d list format, no additional usage.
-		imgs.append(tensor_image)
-
-		# predict the region.
-		predict_result = model.predict(imgs)
+		predict_result = model.predict([image[y:y + winH, x:x + winW]])
 		final_result = np.argmax(predict_result[0]) # transfer the result to 0 or 1
 
 		if final_result == 1:
 			rectangle_result.append((x, y))
 	return rectangle_result
 
+################################################################################
 
+# Set up the trained AlexNet-30^2
 
-# Initialise the AlexNet and load the trained model for the CNN.
 alex_net = create_basic_alexnet()
 model = tflearn.DNN(alex_net)
-model.load(model_path, weights_only = True)
-
+model.load('models/alexnet_30_2_detection.tfl', weights_only = True)
 
 # Set the height and width of the sliding window
 (winW, winH) = (30, 30)
 
-# Read the image
-image = cv2.imread(image_path)
+# setup display window and class names
 
-# Get the proposed regions
-rectangle_result = cnn_find_raindrop(image, winW, winH)
+windowName = "example image"
+cv2.namedWindow(windowName,cv2.WINDOW_NORMAL)
 
-# Remove overlapping rectangles
-new_rectangle_list = utilize_rectangle_list(rectangle_result, 1, 0.1)
+# show ground truth
+
+ground_truth = True;
+
+# process all images in directory (sorted by filename)
+
+for filename in sorted(os.listdir(args.file_path)):
+
+    # if it is a JPG file
+
+    if '.jpg' in filename:
+        print(os.path.join(args.file_path, filename));
+        print();
+
+        # read image
+
+        img = cv2.imread(os.path.join(args.file_path, filename), cv2.IMREAD_COLOR)
+
+        # convert image to RGB (from opencv BGR) and scale 0 -> 1 as per training
+
+        rgb_image = np.asarray(cv2.cvtColor(img, cv2.COLOR_BGR2RGB), dtype="float32")
+        rgb_image /= 255
+
+        # Get the proposed regions
+
+        rectangle_result = cnn_find_raindrop(rgb_image, winW, winH)
+
+        # Remove overlapping rectangles
+
+        new_rectangle_list = utilize_rectangle_list(rectangle_result, 1, 0.1)
+
+        # # **************** Draw Detection Rectangles - GREEN *******************
+
+        clone = img.copy()
+
+        for element in new_rectangle_list:
+        	cv2.rectangle(clone,(element[0], element[1]),(element[2],element[3] ),(0, 255, 0),2)
+
+        ## *************************************************************
 
 
 
-# # **************** Draw Optimized Rectangles *******************
-# We don't want to draw the detection rectangles directly on the original image,
-# we copy the image and draws the rectangels on the copied image.
-clone = image.copy()
+        # ********** Draw the rectangles that contains ground truth raindrops - RED ********
+        if ground_truth:
+        	# Parse the xml file that contains raindrop locations of the image
+        	xml_golden = parse_xml_file(os.path.join(args.ground_truth_path, filename.replace("image", "ground-truth").replace("jpg", "xml")))
+        	# Read the coordinates of the raindrops
+        	xml_reformat = xml_transform(xml_golden)
+        	# *************** Draw the XML Result ********************
+        	for element in xml_reformat:
+        		cv2.rectangle(clone,(element[0], element[1]),(element[2],element[3] ),(0, 0, 255),2)
+        	# ********************************************************
 
-for element in new_rectangle_list:
-	cv2.rectangle(clone,(element[0], element[1]),(element[2],element[3] ),(0, 255, 0),2)
-## *************************************************************
+        # display in a window
 
+        cv2.imshow(windowName,clone)
+        key = cv2.waitKey(200) # wait 200ms
+        if (key == ord('x')):
+            break
 
+# close all windows
 
-# ********** Draw the rectangles that contains ground truth raindrops ********
-if ground_truth:
-	# Parse the xml file that contains raindrop locations of the image
-	xml_golden = parse_xml_file(ground_truth_xml_path)
-	# Read the coordinates of the raindrops
-	xml_reformat = xml_transform(xml_golden)
-	# *************** Draw the XML Result ********************
-	for element in xml_reformat:
-		cv2.rectangle(clone,(element[0], element[1]),(element[2],element[3] ),(0, 0, 255),2)
-	# ********************************************************
-
-
-# Save the result image into a folder.
-cv2.imwrite(result_path, clone)
+cv2.destroyAllWindows()
 
 ################################################################################
