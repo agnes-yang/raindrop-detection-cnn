@@ -64,24 +64,11 @@ $ # to follow
 $ python raindrop_detection_super_pixel.py 3
 
 ```
-
----
-
-## Example Video
-
-[![Examples]()]()
-
-< to follow> Video Example for Raindrop Detection with Sliding Window - click image above to play.
-
-[![Examples]()]()
-
-< to follow> Video Example for Raindrop Detection with Super Pixel - click image above to play.
-
 ---
 
 ## Reference
 
-[On the impact of varying region proposal strategies for raindrop detection and classification using convolutional neural networks](http://breckon.eu/toby/publications/papers/guo18raindrop.pdf)
+[On the impact of varying region proposal strategies for raindrop detection and classification using convolutional neural networks](https://breckon.org/toby/publications/papers/guo18raindrop.pdf)
 (Guo, Akcay, Adey and Breckon), In Proc. International Conference on Image Processing IEEE, 2018.
 ```
 @InProceedings{guo18raindrop,
